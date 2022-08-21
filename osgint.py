@@ -11,7 +11,7 @@ from requests.auth import HTTPBasicAuth
 import sys
 import argparse
 
-version_number = '1.0.0'
+version_number = '1.0.1'
 
 banner = f"""\x1b[0;33m
  .d88888b.                    d8b          888    
@@ -76,6 +76,16 @@ def findInfoFromUsername(username):
         jsonOutput['public_gists'] = f'https://gist.github.com/{username}'
         output.append(f'[+] public_gists : https://gist.github.com/{username}')
 
+def findUsernameFromEmail(email):
+    response = requests.get('https://api.github.com/search/users?q=%s' % email).text
+    username = re.findall(r'"login":"(.*?)"', response)
+    if username:
+        output.append(f'[+] username : {username[0]}')
+        jsonOutput['username'] = username[0]
+    else:
+        output.append(f'[-] username : Not found')
+        jsonOutput['username'] = 'Not found'
+
 class CustomParser(argparse.ArgumentParser):
     def error(self, message):
         sys.stderr.write('Error: %s\n' % message)
@@ -88,6 +98,7 @@ def parse_args():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument("-u", "--username", default=None, help="Github username of the account to search for")
+    parser.add_argument("-e", "--email", default=None, help="Email of the account to search for github username")
     parser.add_argument("--json", default=False, action="store_true", help="Return a json output")
     args = parser.parse_args()
     
@@ -110,3 +121,10 @@ if __name__ == '__main__':
                 print('[+] email :', end='')
                 for email in list(set(email_out)):
                     print(f' {email}', end='')
+    if(args.email):
+        findUsernameFromEmail(args.email)
+        if(args.json):
+            print(json.dumps(jsonOutput, sort_keys=True, indent=4))
+        else:
+            for data in output:
+                print(data)

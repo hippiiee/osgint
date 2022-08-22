@@ -111,6 +111,6 @@ To get a user email, osingt is checking :
 
 To get a user email, osgint is checking :
  - github user API
- - spoofing a commit with the email, then checking the name in the commit history (working every time)
+ - 🚧 spoofing a commit with the email, then checking the name in the commit history (working every time) 🚧 (Work In Progress)
 
 *Project inspired from [Zen](https://github.com/s0md3v/Zen)*

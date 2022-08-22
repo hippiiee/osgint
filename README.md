@@ -2,7 +2,7 @@
 <p align="center">
   Retrieve informations about a github username/email
   <br>
-      <img alt="img last release" src="https://img.shields.io/github/release/hippiiee/ogsint.svg?color=blue">
+      <img alt="img last release" src="https://img.shields.io/github/v/release/hippiiee/osgint.svg?color=blue">
   <a href="https://twitter.com/intent/follow?screen_name=hiippiiie" title="Follow"><img src="https://img.shields.io/twitter/follow/hiippiiie?label=hiippiiie&style=social"></a>
   <br>
 </p>

@@ -4,14 +4,17 @@
 # Author             : Hippie (@hippiiee_)
 # Date created       : 21 Aug 2022
 
+from email.mime import base
 import json
 import requests
+import binascii
 import re
 from requests.auth import HTTPBasicAuth
 import sys
+import base64
 import argparse
 
-version_number = '1.0.1'
+version_number = '1.0.2'
 
 banner = f"""\x1b[0;33m
  .d88888b.                    d8b          888    
@@ -60,6 +63,32 @@ def findEmailFromUsername(username):
 	repos = findReposFromUsername(username)
 	for repo in repos:
 		findEmailFromContributor(username, repo, username)
+
+def findPublicKeysFromUsername(username):
+    gpg_response = requests.get(f'https://github.com/{username}.gpg').text
+    ssh_response = requests.get(f'https://github.com/{username}.ssh').text
+    if not "hasn't uploaded any GPG keys" in gpg_response:
+        output.append(f'[+] GPG_keys : https://github.com/{username}.gpg')
+        jsonOutput['GPG_keys'] = f'https://github.com/{username}.gpg'
+        # extract email from gpg key
+        regex_pgp = re.compile(r"-----BEGIN [^-]+-----([A-Za-z0-9+\/=\s]+)-----END [^-]+-----", re.MULTILINE)
+        matches = regex_pgp.findall(gpg_response)[0]
+        # Base64 decode the signature block
+        b64 = base64.b64decode(matches)
+        # Convert the base64 to hex
+        hx = binascii.hexlify(b64)
+        # Get the offsets for the Key ID
+        keyid = hx.decode()[48:64]
+        output.append(f'[+] GPG_key_id : {keyid}')
+        jsonOutput['GPG_key_id'] = keyid
+        # find email adress
+        emails = re.findall(r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+", b64.decode('Latin-1'))
+        if emails:
+            for email in emails:
+                email_out.append(email)
+    if ssh_response :
+        output.append(f'[+] SSH_keys : https:/github.com/{username}.ssh')
+        jsonOutput['SSH_keys'] = f'https://github.com/{username}.ssh'
 
 def findInfoFromUsername(username):
     url = f'https://api.github.com/users/{username}'
@@ -111,6 +140,7 @@ if __name__ == '__main__':
     if(args.username):
         findInfoFromUsername(args.username)
         findEmailFromUsername(args.username)
+        findPublicKeysFromUsername(args.username)
         if(args.json):
             jsonOutput['email'] = list(set(email_out))
             print(json.dumps(jsonOutput, sort_keys=True, indent=4))

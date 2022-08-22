@@ -10,7 +10,7 @@
 ## Features
   - [x] Find github username from an email
   - [x] Find email from github username (not working all the time)
-  - [x] Find informations about a profile (account creation date, public gists, id ...)
+  - [x] Find informations about a profile (account creation date, public gists, id, public pgp, public ssh ...)
 ## Requirements
 
 ```bash
@@ -61,12 +61,16 @@ $ ./osgint.py -u hippiiee
 [+] created_at : 2018-07-13T08:28:00Z
 [+] updated_at : 2022-08-21T13:11:36Z
 [+] public_gists : https://gist.github.com/hippiiee
+[+] GPG_keys : https://github.com/hippiiee.gpg
+[+] GPG_key_id : 27cbb171ff857c58
 [+] email : hquere@e3r4p3.42.fr hippolyte.q@gmail.com
 ```
 
 ```json
 $ ./osgint.py -u hippiiee --json
 {
+    "GPG_key_id": "27cbb171ff857c58",
+    "GPG_keys": "https://github.com/hippiiee.gpg",
     "avatar_url": "https://avatars.githubusercontent.com/u/41185722?v=4",
     "bio": "Hi !",
     "blog": "https://hippie.cat",
@@ -97,5 +101,16 @@ $ ./osgint.py -e hippolyte.q@gmail.com --json
     "username": "hippiiee"
 }
 ```
+
+## How does it works ?
+
+To get a user email, osingt is checking :
+ - all the public commits of the user, if the email is not hidden in one of the commit it will be added to the list
+ - if the user have a GPG key, if he has one, it's getting the email from the content of the GPG after a base64 decode
+ - github user API
+
+To get a user email, osgint is checking :
+ - github user API
+ - spoofing a commit with the email, then checking the name in the commit history (working every time)
 
 *Project inspired from [Zen](https://github.com/s0md3v/Zen)*

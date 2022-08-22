@@ -151,10 +151,13 @@ if __name__ == '__main__':
                 print('[+] email :', end='')
                 for email in list(set(email_out)):
                     print(f' {email}', end='')
-    if(args.email):
+    elif(args.email):
         findUsernameFromEmail(args.email)
         if(args.json):
             print(json.dumps(jsonOutput, sort_keys=True, indent=4))
         else:
             for data in output:
                 print(data)
+    else:
+        print('Help: ./osgint -h')
+        sys.exit(1)

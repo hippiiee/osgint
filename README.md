@@ -92,13 +92,13 @@ $ ./osgint.py -u hippiiee --json
 
 ### Email
 ``` bash
-$ ./osgint.py -e hippolyte.q@gmail.com
-[+] username : hippiiee
+$ ./osgint.py -e chrisadr@gentoo.org
+[+] username : ChrisADR
 ```
 ```json
-$ ./osgint.py -e hippolyte.q@gmail.com --json
+$ ./osgint.py -e chrisadr@gentoo.org --json
 {
-    "username": "hippiiee"
+    "username": "ChrisADR"
 }
 ```
 

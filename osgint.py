@@ -14,7 +14,7 @@ import sys
 import base64
 import argparse
 
-version_number = '1.0.2'
+version_number = '1.0.3'
 
 banner = f"""\x1b[0;33m
  .d88888b.                    d8b          888    
@@ -104,6 +104,9 @@ def findInfoFromUsername(username):
                     output.append(f'[+] {i} : {data[i]}')
         jsonOutput['public_gists'] = f'https://gist.github.com/{username}'
         output.append(f'[+] public_gists : https://gist.github.com/{username}')
+        return True
+    elif response.status_code == 404:
+        return False
 
 def findUsernameFromEmail(email):
     response = requests.get('https://api.github.com/search/users?q=%s' % email).text
@@ -138,19 +141,22 @@ if __name__ == '__main__':
     print(banner)
     args = parse_args()
     if(args.username):
-        findInfoFromUsername(args.username)
-        findEmailFromUsername(args.username)
-        findPublicKeysFromUsername(args.username)
-        if(args.json):
-            jsonOutput['email'] = list(set(email_out))
-            print(json.dumps(jsonOutput, sort_keys=True, indent=4))
+        username_exists = findInfoFromUsername(args.username)
+        if username_exists:
+            findEmailFromUsername(args.username)
+            findPublicKeysFromUsername(args.username)
+            if(args.json):
+                jsonOutput['email'] = list(set(email_out))
+                print(json.dumps(jsonOutput, sort_keys=True, indent=4))
+            else:
+                for data in output:
+                    print(data)
+                if email_out != []:
+                    print('[+] email :', end='')
+                    for email in list(set(email_out)):
+                        print(f' {email}', end='')
         else:
-            for data in output:
-                print(data)
-            if email_out != []:
-                print('[+] email :', end='')
-                for email in list(set(email_out)):
-                    print(f' {email}', end='')
+            print(f'Username {args.username} is invalid.')
     elif(args.email):
         findUsernameFromEmail(args.email)
         if(args.json):

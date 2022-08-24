@@ -106,6 +106,7 @@ def findInfoFromUsername(username):
         output.append(f'[+] public_gists : https://gist.github.com/{username}')
         return True
     elif response.status_code == 404:
+        jsonOutput['error'] = 'username does not exist'
         return False
 
 def findUsernameFromEmail(email):
@@ -156,7 +157,10 @@ if __name__ == '__main__':
                     for email in list(set(email_out)):
                         print(f' {email}', end='')
         else:
-            print(f'Username {args.username} is invalid.')
+            if(args.json):
+                print(json.dumps(jsonOutput, sort_keys=True, indent=4))
+            else:
+                print(f'Username does not exist')
     elif(args.email):
         findUsernameFromEmail(args.email)
         if(args.json):

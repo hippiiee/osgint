@@ -66,7 +66,7 @@ def findEmailFromUsername(username):
 
 def findPublicKeysFromUsername(username):
     gpg_response = requests.get(f'https://github.com/{username}.gpg').text
-    ssh_response = requests.get(f'https://github.com/{username}.ssh').text
+    ssh_response = requests.get(f'https://github.com/{username}.keys').text
     if not "hasn't uploaded any GPG keys" in gpg_response:
         output.append(f'[+] GPG_keys : https://github.com/{username}.gpg')
         jsonOutput['GPG_keys'] = f'https://github.com/{username}.gpg'
@@ -87,8 +87,8 @@ def findPublicKeysFromUsername(username):
             for email in emails:
                 email_out.append(email)
     if ssh_response :
-        output.append(f'[+] SSH_keys : https:/github.com/{username}.ssh')
-        jsonOutput['SSH_keys'] = f'https://github.com/{username}.ssh'
+        output.append(f'[+] SSH_keys : https:/github.com/{username}.keys')
+        jsonOutput['SSH_keys'] = f'https://github.com/{username}.keys'
 
 def findInfoFromUsername(username):
     url = f'https://api.github.com/users/{username}'

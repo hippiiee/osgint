@@ -17,17 +17,17 @@ import argparse
 version_number = '1.0.3'
 
 banner = f"""\x1b[0;33m
- .d88888b.                    d8b          888    
-d88P" "Y88b                   Y8P          888    
-888     888                                888    
-888     888 .d8888b   .d88b.  888 88888b.  888888 
-888     888 88K      d88P"88b 888 888 "88b 888    
-888     888 "Y8888b. 888  888 888 888  888 888    
-Y88b. .d88P      X88 Y88b 888 888 888  888 Y88b.  
- "Y88888P"   88888P'  "Y88888 888 888  888  "Y888 
+ .d88888b.                    d8b          888
+d88P" "Y88b                   Y8P          888
+888     888                                888
+888     888 .d8888b   .d88b.  888 88888b.  888888
+888     888 88K      d88P"88b 888 888 "88b 888
+888     888 "Y8888b. 888  888 888 888  888 888
+Y88b. .d88P      X88 Y88b 888 888 888  888 Y88b.
+ "Y88888P"   88888P'  "Y88888 888 888  888  "Y888
                           888  \x1b[1;33mv{version_number}\x1b[0;33m
-                     Y8b d88P                     
-                      "Y88P"                      
+                     Y8b d88P
+                      "Y88P"
 \x1b[0;1;3mBy Hippie\x1b[0;33m | \x1b[0;1mhttps://twitter.com/hiippiiie\x1b[0m
 """
 
@@ -67,25 +67,27 @@ def findEmailFromUsername(username):
 def findPublicKeysFromUsername(username):
     gpg_response = requests.get(f'https://github.com/{username}.gpg').text
     ssh_response = requests.get(f'https://github.com/{username}.keys').text
+    breakpoint()
     if not "hasn't uploaded any GPG keys" in gpg_response:
         output.append(f'[+] GPG_keys : https://github.com/{username}.gpg')
         jsonOutput['GPG_keys'] = f'https://github.com/{username}.gpg'
         # extract email from gpg key
         regex_pgp = re.compile(r"-----BEGIN [^-]+-----([A-Za-z0-9+\/=\s]+)-----END [^-]+-----", re.MULTILINE)
-        matches = regex_pgp.findall(gpg_response)[0]
-        # Base64 decode the signature block
-        b64 = base64.b64decode(matches)
-        # Convert the base64 to hex
-        hx = binascii.hexlify(b64)
-        # Get the offsets for the Key ID
-        keyid = hx.decode()[48:64]
-        output.append(f'[+] GPG_key_id : {keyid}')
-        jsonOutput['GPG_key_id'] = keyid
-        # find email adress
-        emails = re.findall(r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+", b64.decode('Latin-1'))
-        if emails:
-            for email in emails:
-                email_out.append(email)
+        matches = regex_pgp.findall(gpg_response)
+        if matches:
+            # Base64 decode the signature block
+            b64 = base64.b64decode(matches[0])
+            # Convert the base64 to hex
+            hx = binascii.hexlify(b64)
+            # Get the offsets for the Key ID
+            keyid = hx.decode()[48:64]
+            output.append(f'[+] GPG_key_id : {keyid}')
+            jsonOutput['GPG_key_id'] = keyid
+            # find email adress
+            emails = re.findall(r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+", b64.decode('Latin-1'))
+            if emails:
+                for email in emails:
+                    email_out.append(email)
     if ssh_response :
         output.append(f'[+] SSH_keys : https:/github.com/{username}.keys')
         jsonOutput['SSH_keys'] = f'https://github.com/{username}.keys'
@@ -134,7 +136,7 @@ def parse_args():
     parser.add_argument("-e", "--email", default=None, help="Email of the account to search for github username")
     parser.add_argument("--json", default=False, action="store_true", help="Return a json output")
     args = parser.parse_args()
-    
+
     return args
 
 

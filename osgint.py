@@ -67,7 +67,6 @@ def findEmailFromUsername(username):
 def findPublicKeysFromUsername(username):
     gpg_response = requests.get(f'https://github.com/{username}.gpg').text
     ssh_response = requests.get(f'https://github.com/{username}.keys').text
-    breakpoint()
     if not "hasn't uploaded any GPG keys" in gpg_response:
         output.append(f'[+] GPG_keys : https://github.com/{username}.gpg')
         jsonOutput['GPG_keys'] = f'https://github.com/{username}.gpg'

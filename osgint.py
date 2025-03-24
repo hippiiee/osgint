@@ -111,19 +111,19 @@ def findInfoFromUsername(username):
         return False
 
 def findUsernameFromEmail(email):
-    # Modified function: using commit search API with the preview header  ### CHANGED
-    headers = {'Accept': 'application/vnd.github.cloak-preview+json'}  # CHANGED: Added preview header
-    url = f'https://api.github.com/search/commits?q=author-email:"{email}"'  # CHANGED: Changed endpoint to commit search
-    response = requests.get(url, headers=headers)  # CHANGED: Request now uses headers
-    if response.status_code == 200:  # CHANGED: Updated response handling logic
-        data = response.json()  # CHANGED: Parse JSON response
-        if data.get('total_count', 0) > 0:  # CHANGED: Check if commits exist
-            commit_item = data['items'][0]  # CHANGED: Get the first commit item
-            author = commit_item.get('author')  # CHANGED: Extract author info from commit
-            if author and author.get('login'):  # CHANGED: Ensure author is linked to a GitHub account
-                username = author['login']  # CHANGED: Extract username
-                output.append(f'[+] username : {username}')  # CHANGED: Append username to output
-                jsonOutput['username'] = username  # CHANGED: Update JSON output
+    # Modified function: using commit search API with the preview header
+    headers = {'Accept': 'application/vnd.github.cloak-preview+json'}
+    url = f'https://api.github.com/search/commits?q=author-email:"{email}"'
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        data = response.json()
+        if data.get('total_count', 0) > 0:
+            commit_item = data['items'][0]
+            author = commit_item.get('author')
+            if author and author.get('login'):
+                username = author['login']
+                output.append(f'[+] username : {username}'
+                jsonOutput['username'] = username
             else:
                 output.append('[-] username : Not found (commit author not linked to a GitHub account)')  # CHANGED
                 jsonOutput['username'] = 'Not found'  # CHANGED

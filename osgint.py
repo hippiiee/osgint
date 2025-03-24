@@ -111,14 +111,28 @@ def findInfoFromUsername(username):
         return False
 
 def findUsernameFromEmail(email):
-    response = requests.get('https://api.github.com/search/users?q=%s' % email).text
-    username = re.findall(r'"login":"(.*?)"', response)
-    if username:
-        output.append(f'[+] username : {username[0]}')
-        jsonOutput['username'] = username[0]
+    # Modified function: using commit search API with the preview header  ### CHANGED
+    headers = {'Accept': 'application/vnd.github.cloak-preview+json'}  # CHANGED: Added preview header
+    url = f'https://api.github.com/search/commits?q=author-email:"{email}"'  # CHANGED: Changed endpoint to commit search
+    response = requests.get(url, headers=headers)  # CHANGED: Request now uses headers
+    if response.status_code == 200:  # CHANGED: Updated response handling logic
+        data = response.json()  # CHANGED: Parse JSON response
+        if data.get('total_count', 0) > 0:  # CHANGED: Check if commits exist
+            commit_item = data['items'][0]  # CHANGED: Get the first commit item
+            author = commit_item.get('author')  # CHANGED: Extract author info from commit
+            if author and author.get('login'):  # CHANGED: Ensure author is linked to a GitHub account
+                username = author['login']  # CHANGED: Extract username
+                output.append(f'[+] username : {username}')  # CHANGED: Append username to output
+                jsonOutput['username'] = username  # CHANGED: Update JSON output
+            else:
+                output.append('[-] username : Not found (commit author not linked to a GitHub account)')  # CHANGED
+                jsonOutput['username'] = 'Not found'  # CHANGED
+        else:
+            output.append('[-] username : Not found (no commits for this email)')  # CHANGED
+            jsonOutput['username'] = 'Not found'  # CHANGED
     else:
-        output.append(f'[-] username : Not found')
-        jsonOutput['username'] = 'Not found'
+        output.append(f'[-] username : Error {response.status_code}')  # CHANGED
+        jsonOutput['username'] = 'Error'  # CHANGED
 
 class CustomParser(argparse.ArgumentParser):
     def error(self, message):

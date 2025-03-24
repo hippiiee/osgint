@@ -143,7 +143,8 @@ def main():
     # Specify the target repository (in "owner/repo" format) to fetch stargazers.
     target_repo = "edithturn/ArrowGIFsCollection"  # Change this to your desired target
     print(f"Fetching stargazer usernames for repository: {target_repo}")
-    stargazer_usernames = get_stargazer_usernames(target_repo)
+    #stargazer_usernames = get_stargazer_usernames(target_repo)
+    stargazer_usernames = list(set(get_stargazer_usernames(target_repo)))
     print(f"Retrieved {len(stargazer_usernames)} usernames.")
 
     all_results = []

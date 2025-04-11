@@ -32,6 +32,7 @@ Y88b. .d88P      X88 Y88b 888 888 888  888 Y88b.
 """
 
 jsonOutput = {}
+fileJsonOutput = {}
 Output = []
 emailOutput = []
 
@@ -64,12 +65,15 @@ def findEmailFromUsername(username):
 	for repo in repos:
 		findEmailFromContributor(username, repo, username)
 
-def findPublicKeysFromUsername(username):
+def findPublicKeysFromUsername(username, input):
     gpg_response = requests.get(f'https://github.com/{username}.gpg').text
     ssh_response = requests.get(f'https://github.com/{username}.keys').text
     if not "hasn't uploaded any GPG keys" in gpg_response:
         Output.append(f'[+] GPG_keys : https://github.com/{username}.gpg')
-        jsonOutput['GPG_keys'] = f'https://github.com/{username}.gpg'
+        if (input):
+            fileJsonOutput[username]['GPG_Keys'] = f'https://github.com/{username}.gpg'
+        else:
+            jsonOutput['GPG_keys'] = f'https://github.com/{username}.gpg'
         # extract email from gpg key
         regex_pgp = re.compile(r"-----BEGIN [^-]+-----([A-Za-z0-9+\/=\s]+)-----END [^-]+-----", re.MULTILINE)
         matches = regex_pgp.findall(gpg_response)
@@ -81,7 +85,10 @@ def findPublicKeysFromUsername(username):
             # Get the offsets for the Key ID
             keyid = hx.decode()[48:64]
             Output.append(f'[+] GPG_key_id : {keyid}')
-            jsonOutput['GPG_key_id'] = keyid
+            if (input):
+                fileJsonOutput[username]['GPG_key_id'] = keyid
+            else:
+                jsonOutput['GPG_key_id'] = keyid
             # find email adress
             emails = re.findall(r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+", b64.decode('Latin-1'))
             if emails:
@@ -89,10 +96,15 @@ def findPublicKeysFromUsername(username):
                     emailOutput.append(email)
     if ssh_response :
         Output.append(f'[+] SSH_keys : https:/github.com/{username}.keys')
-        jsonOutput['SSH_keys'] = f'https://github.com/{username}.keys'
+        if (input):
+            fileJsonOutput[username]['SSH_keys'] = f'https://github.com/{username}.keys'
+        else:
+            jsonOutput['SSH_keys'] = f'https://github.com/{username}.keys'
 
-def findInfoFromUsername(username):
+def findInfoFromUsername(username, input):
     target_keys = ['login','id','avatar_url','name','blog','location','twitter_username','email','company','bio','public_gists','public_repos','followers','following','created_at','updated_at']
+    if (input):
+        fileJsonOutput[username] = {}
     url = f'https://api.github.com/users/{username}'
     response = requests.get(url)
     if response.status_code == 200:
@@ -102,13 +114,22 @@ def findInfoFromUsername(username):
                 if data_keys[i] != None and data_keys[i] != '':
                     if i == 'email':
                         emailOutput.append(data_keys[i])
-                    jsonOutput[i] = data_keys[i]
+                    if (input):
+                        fileJsonOutput[username][i] = data_keys[i]
+                    else:
+                        jsonOutput[i] = data_keys[i]
                     Output.append(f'[+] {i} : {data_keys[i]}')
-        jsonOutput['public_gists'] = f'https://gist.github.com/{username}'
+        if (input):
+            fileJsonOutput[username]['public_repos'] = f'https://github.com/{username}'
+        else:
+            jsonOutput['public_gists'] = f'https://gist.github.com/{username}'
         Output.append(f'[+] public_gists : https://gist.github.com/{username}')
         return True
     elif response.status_code == 404:
-        jsonOutput['error'] = 'username does not exist'
+        if (input):
+            fileJsonOutput[username]['error'] = 'username does not exist'
+        else:
+            jsonOutput['error'] = 'username does not exist'
         return False
 
 def findUsernameFromEmail(email):
@@ -127,6 +148,22 @@ class CustomParser(argparse.ArgumentParser):
         self.print_help()
         sys.exit(2)
 
+def findInfoFromFile(input, json_arg):
+    with open(input, 'r') as file:
+        for username in file:
+            username = username.strip('\n')
+            username_exists = findInfoFromUsername(username, input)
+            if username_exists:
+                fullScan(username, input)
+                Output.clear()
+                emailOutput.clear()
+                jsonOutput.clear()
+    if (json_arg):
+        with open('output.json', 'w') as output:
+            output.write(json.dumps(fileJsonOutput, sort_keys=True, indent=4))
+        print(json.dumps(fileJsonOutput, sort_keys=True, indent=4))
+        print("[*] Saved results to output.json")
+
 def parse_args():
     parser = argparse.ArgumentParser(
         prog=sys.argv[0],
@@ -134,33 +171,43 @@ def parse_args():
     )
     parser.add_argument("-u", "--username", default=None, help="Github username of the account to search for")
     parser.add_argument("-e", "--email", default=None, help="Email of the account to search for github username")
+    parser.add_argument("-i", "--input", default=None, help="Input text file containing a list of github usernames, save results to output.json, always output in json for readability")
     parser.add_argument("--json", default=False, action="store_true", help="Return a json output")
     args = parser.parse_args()
 
     return args
 
+def fullScan(username, input):
+    findEmailFromUsername(username)
+    findPublicKeysFromUsername(username, input)
+    if(args.json):
+        if (input):
+            fileJsonOutput[username]['email'] = list(set(emailOutput))
+        else:
+            jsonOutput['email'] = list(set(emailOutput))
+            print(json.dumps(jsonOutput, sort_keys=True, indent=4))
+    else:
+        for data in Output:
+            print(data)
+        if emailOutput != []:
+            print('[+] email :', end='')
+            for email in list(set(emailOutput)):
+                print(f' {email}', end='')
 
 def validateInput(args):
     if(args.username):
-        username_exists = findInfoFromUsername(args.username)
+        username_exists = findInfoFromUsername(args.username, args.input)
         if username_exists:
-            findEmailFromUsername(args.username)
-            findPublicKeysFromUsername(args.username)
-            if(args.json):
-                jsonOutput['email'] = list(set(emailOutput))
-                print(json.dumps(jsonOutput, sort_keys=True, indent=4))
-            else:
-                for data in Output:
-                    print(data)
-                if emailOutput != []:
-                    print('[+] email :', end='')
-                    for email in list(set(emailOutput)):
-                        print(f' {email}', end='')
+            fullScan(args.username, args.input)
         else:
             if(args.json):
                 print(json.dumps(jsonOutput, sort_keys=True, indent=4))
             else:
                 print(f'Username does not exist')
+    elif(args.input):
+        args.email = None
+        args.json = True
+        findInfoFromFile(args.input, args.json)
     elif(args.email):
         findUsernameFromEmail(args.email)
         if(args.json):

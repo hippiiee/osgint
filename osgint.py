@@ -13,7 +13,7 @@ import sys
 import requests
 from requests.auth import HTTPBasicAuth
 
-version_number = "1.0.3"
+version_number = "1.1.0"
 
 banner = f"""\x1b[0;33m
  .d88888b.                    d8b          888

@@ -14,6 +14,8 @@
   - [x] Scan a list of GitHub usernames and save the results as JSON
 ## Requirements
 
+- Python 3.10 or newer
+
 ```bash
 pip3 install -r requirements.txt
 ```
@@ -30,7 +32,7 @@ d88P" "Y88b                   Y8P          888
 888     888 "Y8888b. 888  888 888 888  888 888    
 Y88b. .d88P      X88 Y88b 888 888 888  888 Y88b.  
  "Y88888P"   88888P'  "Y88888 888 888  888  "Y888 
-                          888  v1.0.0
+                          888  v1.1.0
                      Y8b d88P                     
                       "Y88P"                      
 By Hippie | https://twitter.com/hiippiiie

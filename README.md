@@ -1,6 +1,6 @@
 # OSGINT
 <p align="center">
-  Retrieve informations about a github username/email
+  Retrieve public information about a GitHub username or email address
   <br>
       <img alt="img last release" src="https://img.shields.io/github/v/release/hippiiee/osgint.svg?color=blue">
   <a href="https://twitter.com/intent/follow?screen_name=hiippiiie" title="Follow"><img src="https://img.shields.io/twitter/follow/hiippiiie?label=hiippiiie&style=social"></a>
@@ -8,9 +8,10 @@
 </p>
 
 ## Features
-  - [x] Find github username from an email
-  - [x] Find email from github username (not working all the time)
-  - [x] Find informations about a profile (account creation date, public gists, id, public pgp, public ssh ...)
+  - [x] Find a GitHub username from an email address
+  - [x] Find email addresses associated with a GitHub username (not always available)
+  - [x] Find public profile information (account creation date, public gists, ID, GPG keys, SSH keys, etc.)
+  - [x] Scan a list of GitHub usernames and save the results as JSON
 ## Requirements
 
 ```bash
@@ -34,7 +35,7 @@ Y88b. .d88P      X88 Y88b 888 888 888  888 Y88b.
                       "Y88P"                      
 By Hippie | https://twitter.com/hiippiiie
 
-usage: osgint.py [-h] [-u USERNAME] [-e EMAIL] [--json]
+usage: osgint.py [-h] [-u USERNAME | -e EMAIL | -i INPUT] [--json]
 
 options:
   -h, --help            show this help message and exit
@@ -42,6 +43,8 @@ options:
                         Github username of the account to search for (default: None)
   -e EMAIL, --email EMAIL
                         Email of the account to search for github username (default: None)
+  -i INPUT, --input INPUT
+                        Text file containing one GitHub username per line; saves JSON results to output.json (default: None)
   --json                Return a json output (default: False)
 ```
 ## Example output
@@ -102,15 +105,30 @@ $ ./osgint.py -e chrisadr@gentoo.org --json
 }
 ```
 
-## How does it works ?
+### Input file
 
-To get a user email, osingt is checking :
- - all the public commits of the user, if the email is not hidden in one of the commit it will be added to the list
- - if the user have a GPG key, if he has one, it's getting the email from the content of the GPG after a base64 decode
- - github user API
+Provide one username per line. Empty lines and surrounding whitespace are ignored.
 
-To get a user email, osgint is checking :
- - github user API
+```text
+hippiiee
+torvalds
+```
+
+```bash
+$ ./osgint.py --input usernames.txt
+```
+
+The combined JSON result is printed and saved to `output.json`.
+
+## How does it work?
+
+To find email addresses associated with a username, OSGINT checks:
+ - the user's public commits
+ - email addresses included in the user's public GPG keys
+ - the GitHub user API
+
+To find a GitHub username from an email address, OSGINT checks:
+ - the GitHub user search API
  - 🚧 spoofing a commit with the email, then checking the name in the commit history (working every time) 🚧 (Work In Progress)
 
 *Project inspired from [Zen](https://github.com/s0md3v/Zen)*
